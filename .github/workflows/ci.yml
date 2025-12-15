@@ -13,42 +13,88 @@ jobs:
       PSDK_PLATFORM: raspberry_pi
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
+        run: |
+          echo "::group::Cloning repository"
+          echo "Starting checkout"
+          git --version
+          echo "::endgroup::"
         uses: actions/checkout@v4
 
       - name: Setup ROS Noetic
+        run: |
+          echo "::group::Setting up ROS"
+          echo "Installing ROS Noetic"
+          echo "::endgroup::"
         uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: noetic
 
+      - name: Install build tools
+        run: |
+          echo "::group::Installing build tools"
+          sudo apt update
+          sudo apt install -y python3-catkin-tools pkg-config
+          echo "Build tools installed"
+          echo "::endgroup::"
+
       - name: Install system dependencies
         run: |
-          sudo apt update
+          echo "::group::Installing system dependencies"
           sudo apt install -y \
             libusb-1.0-0-dev \
             libopus-dev \
-            pkg-config \
             ffmpeg=7:4.* \
             libavcodec-dev=7:4.* \
             libavformat-dev=7:4.* \
             libavutil-dev=7:4.* \
             libswscale-dev=7:4.*
+          echo "System dependencies installed"
+          echo "::endgroup::"
 
       - name: Verify FFmpeg version
         run: |
+          echo "::group::Verifying FFmpeg"
           ffmpeg -version | head -n 1
+          echo "::endgroup::"
 
       - name: Create catkin workspace
         run: |
+          echo "::group::Preparing catkin workspace"
           mkdir -p ~/catkin_ws/src
           cp -r $GITHUB_WORKSPACE ~/catkin_ws/src/psdk_vendor
+          ls ~/catkin_ws/src
+          echo "::endgroup::"
+
+      - name: Configure catkin workspace
+        run: |
+          echo "::group::Configuring catkin"
+          source /opt/ros/noetic/setup.bash
+          cd ~/catkin_ws
+          catkin config --extend /opt/ros/noetic \
+                        --cmake-args -DPSDK_PLATFORM=${PSDK_PLATFORM}
+          catkin config
+          echo "::endgroup::"
 
       - name: Build psdk_vendor
         run: |
+          echo "::group::Building psdk_vendor"
           source /opt/ros/noetic/setup.bash
           cd ~/catkin_ws
-          catkin_make -DPSDK_PLATFORM=${PSDK_PLATFORM}
+          catkin build psdk_vendor
+          echo "::endgroup::"
 
-      - name: Build succeeded
-        run: echo "psdk_vendor build OK"
+      - name: Verify build output
+        run: |
+          echo "::group::Verifying build artifacts"
+          test -f ~/catkin_ws/devel/lib/libpsdk_vendor_c.a
+          echo "libpsdk_vendor_c.a exists"
+          echo "::endgroup::"
 
+      - name: CI Summary
+        run: |
+          echo "======================================"
+          echo "psdk_vendor CI completed successfully"
+          echo "Platform: ${PSDK_PLATFORM}"
+          echo "ROS distro: ${ROS_DISTRO}"
+          echo "======================================"
