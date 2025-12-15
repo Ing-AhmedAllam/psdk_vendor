@@ -14,28 +14,31 @@ jobs:
 
     steps:
       - name: Checkout repository
-        run: |
-          echo "::group::Cloning repository"
-          echo "Starting checkout"
-          git --version
-          echo "::endgroup::"
         uses: actions/checkout@v4
 
-      - name: Setup ROS Noetic
+      - name: Milestone — Repository checked out
         run: |
-          echo "::group::Setting up ROS"
-          echo "Installing ROS Noetic"
+          echo "::group::Cloning repository"
+          git --version
+          echo "Repository cloned"
           echo "::endgroup::"
+
+      - name: Setup ROS Noetic
         uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: noetic
+
+      - name: Milestone — ROS ready
+        run: |
+          echo "::group::Setting up ROS"
+          echo "ROS Noetic installed and sourced"
+          echo "::endgroup::"
 
       - name: Install build tools
         run: |
           echo "::group::Installing build tools"
           sudo apt update
           sudo apt install -y python3-catkin-tools pkg-config
-          echo "Build tools installed"
           echo "::endgroup::"
 
       - name: Install system dependencies
@@ -49,7 +52,6 @@ jobs:
             libavformat-dev=7:4.* \
             libavutil-dev=7:4.* \
             libswscale-dev=7:4.*
-          echo "System dependencies installed"
           echo "::endgroup::"
 
       - name: Verify FFmpeg version
