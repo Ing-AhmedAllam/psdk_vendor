@@ -1,0 +1,52 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# ------------------------------------------------------------
+# Base system + build tools
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    pkg-config \
+    git \
+    ca-certificates \
+    wget \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# Mandatory DJI PSDK dependencies
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    libusb-1.0-0-dev \
+    libopus-dev \
+    ffmpeg \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libswscale-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# Sanity checks (fail early if versions are wrong)
+# ------------------------------------------------------------
+RUN ffmpeg -version | head -n 1
+
+# Enforce DJI requirement: ffmpeg major version must be 4
+RUN bash -c '\
+    FFMPEG_MAJOR=$(ffmpeg -version | head -n1 | sed -E "s/.*version ([0-9]+).*/\\1/"); \
+    echo "Detected ffmpeg major version: $FFMPEG_MAJOR"; \
+    if [ "$FFMPEG_MAJOR" != "4" ]; then \
+        echo "ERROR: DJI requires ffmpeg 4.x.x"; \
+        exit 1; \
+    fi'
+
+# ------------------------------------------------------------
+# Default working directory
+# ------------------------------------------------------------
+WORKDIR /ws
+
+# This image only provides the toolchain + deps
+# Source code is mounted / copied by CI
