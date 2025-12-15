@@ -1,0 +1,54 @@
+name: psdk_vendor CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    env:
+      ROS_DISTRO: noetic
+      PSDK_PLATFORM: raspberry_pi
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup ROS Noetic
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: noetic
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            libusb-1.0-0-dev \
+            libopus-dev \
+            pkg-config \
+            ffmpeg=7:4.* \
+            libavcodec-dev=7:4.* \
+            libavformat-dev=7:4.* \
+            libavutil-dev=7:4.* \
+            libswscale-dev=7:4.*
+
+      - name: Verify FFmpeg version
+        run: |
+          ffmpeg -version | head -n 1
+
+      - name: Create catkin workspace
+        run: |
+          mkdir -p ~/catkin_ws/src
+          cp -r $GITHUB_WORKSPACE ~/catkin_ws/src/psdk_vendor
+
+      - name: Build psdk_vendor
+        run: |
+          source /opt/ros/noetic/setup.bash
+          cd ~/catkin_ws
+          catkin_make -DPSDK_PLATFORM=${PSDK_PLATFORM}
+
+      - name: Build succeeded
+        run: echo "psdk_vendor build OK"
+
