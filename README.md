@@ -26,6 +26,8 @@ psdk_vendor/
 │   └── C++/                # C++ implementation (Jetson only)
 │       ├── module_sample/  # Sample modules and utilities
 │       └── platform/       # Platform HAL implementations
+│           ├── common/     # Common platform code
+│           └── nvidia_jetson/  # NVIDIA Jetson specific code
 ├── CMakeLists.txt          # Build configuration
 └── package.xml             # ROS package manifest
 ```
@@ -35,14 +37,9 @@ psdk_vendor/
 ### Primary Platforms
 - **NVIDIA Jetson**: Full support (C and C++ libraries)
   - Jetson Nano
-  - Jetson Xavier NX
-  - Jetson AGX Xavier
-  - Jetson Orin series
 
 - **Raspberry Pi**: C library support only
-  - Raspberry Pi 3
   - Raspberry Pi 4
-  - Raspberry Pi 5
 
 ### Architectures
 - **ARM64 (aarch64)**: For Jetson and Raspberry Pi platforms
@@ -119,6 +116,7 @@ Navigate to your catkin workspace and build:
 
 ```bash
 cd ~/ros/tendroids_ws
+catkin config --install
 catkin build psdk_vendor
 ```
 
@@ -268,11 +266,11 @@ uname -m
 
 ## License
 
-TODO - Please update the license information in `package.xml`
+MIT
 
 ## Maintainer
 
-- **essam** - essam@todo.todo
+- **Eng. Ahmed Allam** - ahmed.18allam@gmail.com
 
 ## Contributing
 

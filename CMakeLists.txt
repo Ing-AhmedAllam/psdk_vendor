@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(psdk_vendor)
+project(dji_psdk_vendor)
 
 add_definitions(-D_GNU_SOURCE)
 
@@ -80,6 +80,7 @@ add_library(psdk_vendor_c STATIC
     ${PSDK_C_HAL_SOURCES}
     ${PSDK_C_APP_SOURCES}
 )
+# add_dependencies(psdk_vendor_c ${catkin_EXPORTED_TARGETS})
 if (PSDK_PLATFORM STREQUAL "nvidia_jetson")
     add_library(psdk_vendor_cpp STATIC
         ${PSDK_CPP_MODULES_SOURCES}
@@ -87,6 +88,7 @@ if (PSDK_PLATFORM STREQUAL "nvidia_jetson")
         ${PSDK_CPP_HAL_SOURCES}
         ${PSDK_CPP_APP_SOURCES}
     )
+    # add_dependencies(psdk_vendor_cpp ${catkin_EXPORTED_TARGETS})
 endif()
 
 # Include directories
@@ -231,15 +233,19 @@ if (PSDK_PLATFORM STREQUAL "nvidia_jetson")
 endif ()
 
 # Catkin package
-if (PSDK_PLATFORM STREQUAL "nvidia_jetson")
-    catkin_package(
-        INCLUDE_DIRS psdk_core/psdk_lib/include
-        LIBRARIES psdk_vendor_c psdk_vendor_cpp
-    )
-else()
+if (PSDK_PLATFORM STREQUAL "raspberry_pi")
     catkin_package(
         INCLUDE_DIRS psdk_core/psdk_lib/include
         LIBRARIES psdk_vendor_c
+        # EXPORTED_TARGETS psdk_vendor_c
+    )
+endif()
+if (PSDK_PLATFORM STREQUAL "nvidia_jetson")
+    catkin_package(
+        INCLUDE_DIRS psdk_core/psdk_lib/include
+        LIBRARIES 
+            psdk_vendor_c 
+            psdk_vendor_cpp
     )
 endif()
 
